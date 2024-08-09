@@ -41,20 +41,24 @@
       line-height: 40px;
     }
 
-    p:last-of-type {
+    p.footer {
       color: rgba(255, 255, 255, 0.25);
     }
 
-    p:last-of-type a {
+    p.footer a {
       color: rgba(255, 255, 255, 0.25);
       text-decoration: none;
       border-bottom: 0px solid rgba(255, 255, 255, 0.25);
       transition: color 200ms;
     }
 
-    p:last-of-type a:hover {
+    p.footer a:hover {
       color: rgba(255, 255, 255, 0.5);
       text-decoration: none;
+    }
+
+    p.footer.small {
+      font-size: 24px;
     }
 
     section {
@@ -147,9 +151,9 @@
       <p><span>iqobi</span> is based in New York City.</p>
       <p>We’re crafting products we think can positively impact how people use the Internet.</p>
       </p>
-      <p>—<br /><a href="https://x.com/lfabien">Fabien</a> & <a href="https://x.com/stephane">Stéphane</a>
+      <p class="footer">—<br /><a href="https://x.com/lfabien">Fabien</a> & <a href="https://x.com/stephane">Stéphane</a>
       </p>
-      <p class="small">If you need support, <a href="mailto:support@iqobi.com">send us an email at support@iqobi.com</a></p>
+      <p class=" footer small">If you need support, <a href="mailto:support@iqobi.com">send us an email at support@iqobi.com</a></p>
     </article>
   </section>
 </body>
