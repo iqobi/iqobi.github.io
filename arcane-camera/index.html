@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Arcane</title>
+    <link rel="stylesheet" href="style.css" />
+    <link rel="icon" type="image/x-icon" href="favicon.png" />
+    <link rel="shortcut icon" href="favicon.png" />
+    <link rel="apple-touch-icon" href="favicon.png" />
+  </head>
+  <body>
+    <h1>
+      <img src="arcane-icon.png" alt="Arcane icon" /><span class="arcane"
+        >Arcane</span
+      >
+      allows you to 📸 the 🌎 in a stunning 2.70:1 aspect ratio, perfect for 🌆
+      and 🏞️. It features a 🔲 filter for a timeless aesthetic and a 📐
+      indicator that ensures your ✨ shot is 💯 aligned, guaranteeing 💅
+      composition every time. Designed for 👽 who 👀 the 🌍 differently.
+    </h1>
+    <ul>
+      <li>
+        📲
+        <a href="https://testflight.apple.com/join/Bok2T964"
+          >Download for iPhone</a
+        >
+      </li>
+    </ul>
+    <img src="b&w.png" id="hero" />
+    <span class="secondary"
+      >Made with ❤️ in🗽·
+      <a href="privacy.html">Privacy Policy & Support</a></span
+    >
+  </body>
+  <script>
+    document.addEventListener("DOMContentLoaded", () => {
+      const hero = document.getElementById("hero");
+      if (hero) {
+        console.log(hero);
+        const handleClick = (e) => {
+          if (e.currentTarget.src.includes("color")) {
+            hero.src = "b&w.png";
+          } else {
+            hero.src = "color.png";
+          }
+        };
+        hero.addEventListener("click", handleClick);
+      }
+    });
+  </script>
+</html>

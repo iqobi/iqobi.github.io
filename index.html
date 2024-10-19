@@ -1,0 +1,161 @@
+<html>
+
+<head>
+  <title>iqobi</title>
+  <meta charset="UTF-8">
+  <meta name="author" content="Fabien Legoupillot, Stephane Rangaya">
+  <meta name="viewport" content="initial-scale=1.0">
+  <link rel="stylesheet" href="https://use.typekit.net/yxk8zvc.css">
+  <style>
+    * {
+      transition: width 200ms, height 200ms, margin 200ms, padding 200ms, border-radius 200ms;
+    }
+
+    html,
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: acumin-pro, sans-serif;
+    }
+
+    a.link,
+    a.link:visited {
+      color: #69D9F8;
+      text-decoration: none;
+      border-bottom: 2px solid #69D9F8;
+    }
+
+    a.link:hover {
+      color: #69D9F8;
+      text-decoration: none;
+      border-bottom: 2px solid #69D9F8;
+    }
+
+    a.link:hover span.spacing {
+      width: 20px;
+    }
+
+    article {
+      color: white;
+      font-size: 32px;
+      line-height: 40px;
+    }
+
+    p.footer {
+      color: rgba(255, 255, 255, 0.25);
+    }
+
+    p.footer a {
+      color: rgba(255, 255, 255, 0.25);
+      text-decoration: none;
+      border-bottom: 0px solid rgba(255, 255, 255, 0.25);
+      transition: color 200ms;
+    }
+
+    p.footer a:hover {
+      color: rgba(255, 255, 255, 0.5);
+      text-decoration: none;
+    }
+
+    p.footer.small {
+      font-size: 24px;
+    }
+
+    section {
+      background-color: #2B172B;
+      border-radius: 10px;
+      box-sizing: border-box;
+      height: calc(100vh - 80px);
+      margin: 40px;
+      padding: 40px;
+      width: calc(100vw - 80px);
+    }
+
+    span {
+      color: #F669F8;
+    }
+
+
+    span.spacing {
+      display: inline-block;
+      width: 10px;
+      transition: width 200ms;
+    }
+
+
+
+    @media only screen and (max-width: 768px) {
+      a.link:hover span.spacing {
+        width: 10px;
+      }
+
+      article {
+        font-size: 24px;
+        line-height: 30px;
+      }
+
+      section {
+        border-radius: 8px;
+        height: calc(100vh - 60px);
+        margin: 30px;
+        padding: 30px;
+        width: calc(100vw - 60px);
+      }
+
+      span.spacing {
+        width: 5px;
+      }
+    }
+
+    @media only screen and (max-width: 512px) {
+
+      html,
+      body {
+        background-color: #2B172B;
+      }
+
+      a.link:hover span.spacing {
+        width: 10px;
+      }
+
+      article {
+        font-size: 24px;
+        line-height: 30px;
+      }
+
+      section {
+        margin: 0;
+        border-radius: 0;
+        padding: 30px;
+        width: calc(100vw);
+      }
+
+      span.spacing {
+        width: 5px;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <section>
+    <header>
+      <svg width="25px" height="25px" viewBox="0 0 64.056546 64.2386601" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+          <g id="Page-1" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+              <path d="M37.2580999,12.3515202 L34.9419777,17.8074278 C28.302066,16.4594228 21.3997993,19.9321951 18.6391115,26.4359682 C15.8784236,32.9397412 18.1750375,40.3172067 23.7571815,44.1571565 L16.8461421,60.438934 C15.077534,59.4925734 13.4294058,58.3978877 11.9107658,57.1771737 L16.7739411,45.719171 C11.7235534,40.0102496 10.0964973,31.670606 13.2834469,24.1626234 C17.3081992,14.6809011 27.6205037,9.80070301 37.2580999,12.3515202 Z M56.6028697,11.4506962 C63.969341,20.282884 66.3049577,32.8111068 61.6640238,44.1911349 L61.535609,44.502152 L61.4344843,44.7378275 L61.2847963,45.0832403 C54.7223559,59.9105606 38.2895931,67.3840079 23.1010082,62.9866038 L23.1728723,63.0083223 C23.0198983,62.9643419 22.8670467,62.9191626 22.7143291,62.8727798 L23.1010082,62.9866038 C22.9468814,62.9419809 22.7928828,62.8961357 22.6390238,62.8490634 L22.7143291,62.8727798 C22.5543321,62.8241861 22.3944822,62.7742714 22.2347922,62.7230304 L22.6390238,62.8490634 C22.4937072,62.8046046 22.3485153,62.7590512 22.2034578,62.7123991 L24.4971669,57.3075413 C37.1149438,61.0847986 50.841555,54.8052644 56.1287637,42.3493814 C59.6902081,33.9591441 58.5757646,24.7611069 53.9594905,17.6783392 L56.6028697,11.4506962 Z M41.8532969,1.52576915 L39.5593791,6.93111876 C26.9416021,3.15386153 13.2149909,9.43339569 7.92778227,21.8892787 C4.36633782,30.279516 5.48078139,39.4775532 10.0970554,46.5603209 L7.45367621,52.7879639 C-0.0060415193,43.8439762 -2.30673514,31.1097909 2.57211767,19.6159339 C9.00051835,4.47157098 25.6363043,-3.20255084 40.9912672,1.26242331 L40.8197314,1.21202612 C40.9940559,1.26175313 41.1682233,1.31303561 41.3422169,1.36588032 L40.9912672,1.26242331 C41.1334651,1.30377214 41.2755531,1.34616203 41.4175221,1.38959668 L41.3422169,1.36588032 C41.4913593,1.41117732 41.640374,1.45762217 41.7892504,1.50521913 L41.8532969,1.52576915 Z M52.1457802,7.06148636 L47.2826048,18.5194891 C52.3329925,24.2284105 53.9600486,32.5680541 50.7730991,40.0760367 C46.7483467,49.557759 36.4360423,54.4379571 26.7984461,51.8871399 L29.1145682,46.4312323 C35.75448,47.7792373 42.6567466,44.306465 45.4174345,37.8026919 C48.1781224,31.2989189 45.8815084,23.9214534 40.2993645,20.0815036 L47.2104038,3.79972613 C48.9790119,4.74608672 50.6271402,5.84077237 52.1457802,7.06148636 Z M35.4522485,24.0529493 C39.8890263,25.9362497 41.9527793,31.0744081 40.0617699,35.5293472 C38.1707604,39.9842863 33.0410753,42.0690113 28.6042975,40.1857108 C24.1675197,38.3024104 22.1037666,33.164252 23.9947761,28.7093129 C25.8857855,24.2543738 31.0154706,22.1696488 35.4522485,24.0529493 Z M33.1695981,29.4305365 C31.6906722,28.8027696 29.9807772,29.497678 29.3504407,30.9826577 C28.7201042,32.4676374 29.4080219,34.1803568 30.8869478,34.8081236 C32.3658738,35.4358905 34.0757688,34.7409821 34.7061053,33.2560024 C35.3364418,31.7710227 34.6485241,30.0583033 33.1695981,29.4305365 Z" id="Rectangle-2" fill="#F669F8"></path>
+          </g>
+      </svg>
+    </header>
+    <article>
+      <p>Hello,</p>
+      <p><span>iqobi</span> is based in New York City.</p>
+      <p>We’re crafting products we think can positively impact how people use the Internet, like <a class="link" href="http://arcane.camera">Arcane Camera</a>, our first iPhone app.</p>
+      </p>
+      <p class="footer">—<br /><a href="https://x.com/lfabien">Fabien</a> & <a href="https://x.com/stephane">Stéphane</a>
+      </p>
+      <p class=" footer small">If you need support, <a href="mailto:support@iqobi.com">send us an email at support@iqobi.com</a></p>
+    </article>
+  </section>
+</body>
+
+</html>
