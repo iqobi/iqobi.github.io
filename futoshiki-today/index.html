@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Futoshiki Today</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="superimposed-text">
+                <span class="front">Today</span>
+                <span class="back">今日</span>
+            </div>
+            <div id="timer" class="timer">00:00</div>
+        </div>
+        
+        <div id="grid" class="grid"></div>
+        
+        <div class="toolbar">
+            <div class="number-buttons">
+                <button class="number-btn" data-number="1">1</button>
+                <button class="number-btn" data-number="2">2</button>
+                <button class="number-btn" data-number="3">3</button>
+                <button class="number-btn" data-number="4">4</button>
+                <button class="clear-btn">×</button>
+            </div>
+        </div>
+        
+        <div id="overlay" class="overlay">
+            <button id="reveal-btn" class="reveal-btn">Reveal Futoshiki</button>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
