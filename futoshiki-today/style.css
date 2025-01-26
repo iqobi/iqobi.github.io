@@ -88,9 +88,11 @@ body {
   flex-direction: column;
   align-items: center;
   padding: 20px;
-  justify-content: center;
   min-height: 100%;
   gap: 20px;
+  height: calc(100vh - 100px);
+  overflow-y: auto;
+  position: relative;
 }
 
 /* Timer label */
@@ -107,9 +109,7 @@ body {
   flex-direction: column;
   gap: 8px;
   margin-bottom: 40px;
-  width: fit-content;
-  margin-left: auto;
-  margin-right: auto;
+  left: 50%;
 }
 
 /* Grid row container */
@@ -182,8 +182,14 @@ body {
 .toolbar {
   display: flex;
   gap: 12px;
-  margin-top: auto;
   padding: 20px;
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background-color: var(--background-color);
+  justify-content: center;
+  z-index: 90;
 }
 
 /* Buttons inside toolbar */
@@ -356,37 +362,45 @@ button:focus {
 @media (max-width: 480px) {
   .main-content {
     padding: 10px;
-    justify-content: flex-start;
-    padding-top: 40px;
-  }
-
-  .puzzle-container {
-    margin-bottom: 20px;
+    padding-top: 20px;
+    padding-bottom: 100px;
   }
   
   .cell {
-    width: calc(var(--cell-size) * 0.8);
-    height: calc(var(--cell-size) * 0.8);
+    width: calc(var(--cell-size) * 0.7);
+    height: calc(var(--cell-size) * 0.7);
     font-size: 20px;
   }
 
-  .title-front {
-    font-size: 36px;
+  .title-front, .title-back {
+    font-size: 32px;
   }
 
-  .title-back {
-    font-size: 36px;
+  .rules-button {
+    padding: 6px 12px;
+    font-size: 12px;
   }
 
-  .modal-content {
-    max-width: 90%;
-    padding: 20px;
-  }
-  
   .number-button {
-    width: 40px;
-    height: 40px;
-    font-size: 18px;
+    width: 36px;
+    height: 36px;
+    font-size: 16px;
+  }
+
+  .toolbar {
+    gap: 8px;
+    padding: 12px;
+  }
+
+  .top-bar {
+    padding: 10px;
+  }
+
+  .grid-row {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    justify-content: center;
   }
 }
 
@@ -430,12 +444,10 @@ label {
 /* Add specific iOS adjustments */
 @supports (-webkit-touch-callout: none) {
   .main-content {
-    padding-top: 20px;
-    min-height: -webkit-fill-available;
+    height: calc(100vh - 100px - env(safe-area-inset-bottom));
   }
-  
-  .puzzle-container {
-    transform: translateX(0);
-    -webkit-transform: translateX(0);
+
+  .toolbar {
+    padding-bottom: calc(12px + env(safe-area-inset-bottom));
   }
 }
