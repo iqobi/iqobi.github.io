@@ -1,38 +1,117 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Futoshiki Today</title>
-    <link rel="stylesheet" href="styles.css">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>Futoshiki Today</title>
+  <link rel="stylesheet" href="style.css" />
+  <script defer src="script.js"></script>
+  <meta name="apple-itunes-app" content="app-id=6740991239">
 </head>
 <body>
-    <div class="container">
-        <div class="header">
-            <div class="superimposed-text">
-                <span class="front">Today</span>
-                <span class="back">今日</span>
-            </div>
-            <div id="timer" class="timer">00:00</div>
-        </div>
-        
-        <div id="grid" class="grid"></div>
-        
-        <div class="toolbar">
-            <div class="number-buttons">
-                <button class="number-btn" data-number="1">1</button>
-                <button class="number-btn" data-number="2">2</button>
-                <button class="number-btn" data-number="3">3</button>
-                <button class="number-btn" data-number="4">4</button>
-                <button class="clear-btn">×</button>
-            </div>
-        </div>
-        
-        <div id="overlay" class="overlay">
-            <button id="reveal-btn" class="reveal-btn">Reveal Futoshiki</button>
-        </div>
-    </div>
+  <div id="app">
+    <!-- Header / Title -->
+    <nav class="top-bar">
+      <div class="title-container">
+        <div class="title-back">今日</div>
+        <div class="title-front" id="title-today">Today</div>
+      </div>
+      <button class="rules-button" id="show-rules-btn">How to play?</button>
+    </nav>
 
-    <script src="script.js"></script>
+    <!-- Main content -->
+    <div class="main-content">
+      <!-- Timer display -->
+      <div class="timer" id="timer-label">00:00</div>
+
+      <!-- Puzzle container -->
+      <div class="puzzle-container" id="puzzle-container">
+        <!-- The puzzle grid and constraints will be injected here by JS -->
+      </div>
+
+      <!-- Number toolbar -->
+      <div class="toolbar" id="number-toolbar">
+        <!-- Will be populated with number buttons or share button -->
+      </div>
+    </div>
+  </div>
+
+  <!-- Reveal overlay -->
+  <div id="reveal-overlay" class="reveal-overlay">
+    <button id="reveal-btn" class="reveal-button">Reveal Futoshiki</button>
+  </div>
+
+  <!-- Rules modal -->
+  <div class="modal hidden" id="rules-modal">
+    <div class="modal-content">
+      <h2>How to Play</h2>
+      <div class="rules-items">
+        <div class="rule-item">
+          <div class="rule-icon">
+            <svg class="icon" viewBox="0 0 24 24">
+              <path fill="currentColor" d="M5 9h14v6H5V9m14-3v2H5V6h14m0 12v-2H5v2h14Z"/>
+            </svg>
+          </div>
+          <div class="rule-text">
+            <h3>Fill the Grid</h3>
+            <p>Place numbers 1-4 in each row and column, ensuring no number repeats in any row or column.</p>
+          </div>
+        </div>
+        
+        <div class="rule-item">
+          <div class="rule-icon">
+            <svg class="icon" viewBox="0 0 24 24">
+              <path fill="currentColor" d="m8.59 16.58l4.58-4.58l-4.58-4.59L10 6l6 6l-6 6l-1.41-1.42Z"/>
+            </svg>
+          </div>
+          <div class="rule-text">
+            <h3>Follow the Signs</h3>
+            <p>The inequality signs (< and >) between cells must be satisfied by your numbers. A < B means A must be less than B.</p>
+          </div>
+        </div>
+        
+        <div class="rule-item">
+          <div class="rule-icon">
+            <svg class="icon" viewBox="0 0 24 24">
+              <path fill="currentColor" d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10s10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5l1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
+            </svg>
+          </div>
+          <div class="rule-text">
+            <h3>Complete the Puzzle</h3>
+            <p>The puzzle is solved when all cells are filled correctly and all inequalities are satisfied.</p>
+          </div>
+        </div>
+      </div>
+      <button id="close-rules-btn" class="close-button">Done</button>
+    </div>
+  </div>
+
+  <!-- Share sheet (for mobile) -->
+  <div class="modal hidden" id="share-modal">
+    <div class="modal-content">
+      <div class="share-text" id="share-text"></div>
+      <button id="copy-share-btn" class="close-button">Copy</button>
+      <button id="close-share-btn" class="secondary-button">Close</button>
+    </div>
+  </div>
+
+  <!-- Add this before the closing body tag -->
+  <div class="modal hidden" id="dev-modal">
+    <div class="modal-content">
+      <h2>Developer Options</h2>
+      <div class="dev-options">
+        <div class="date-picker-container">
+          <label for="puzzle-date">Select Puzzle Date:</label>
+          <input type="date" id="puzzle-date" class="date-input">
+          <button id="load-date-btn" class="close-button">Load Puzzle</button>
+        </div>
+        <div class="reset-container">
+          <p>Reset current puzzle:</p>
+          <button id="dev-reset-btn" class="secondary-button">Reset Today's Puzzle</button>
+        </div>
+      </div>
+      <button id="close-dev-modal-btn" class="secondary-button">Close</button>
+    </div>
+  </div>
 </body>
 </html>
