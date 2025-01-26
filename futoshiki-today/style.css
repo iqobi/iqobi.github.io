@@ -11,12 +11,6 @@
   --shadow-dark: 2px 2px 3px rgba(0, 0, 0, 0.1);
 }
 
-/* Custom font (Instrument) */
-@font-face {
-  font-family: 'Instrument';
-  src: url('instrument.ttf') format('truetype');
-}
-
 /* Basic resets and body styling */
 * {
   box-sizing: border-box;
@@ -62,7 +56,7 @@ body {
 }
 
 .title-front {
-  font-family: 'Instrument', serif;
+  font-family: 'Instrument Serif', serif;
   font-size: 48px;
   position: relative;
 }
