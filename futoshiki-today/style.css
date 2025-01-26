@@ -153,6 +153,11 @@ body {
   width: 8px;
   text-align: center;
   user-select: none;
+  line-height: 1;
+  height: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .constraint.horizontal {
@@ -161,10 +166,12 @@ body {
 
 .constraint.vertical {
   height: 8px;
+  width: var(--cell-size);
   display: flex;
   justify-content: center;
   align-items: center;
-  width: var(--cell-size); /* Match cell width */
+  margin: 0;
+  white-space: nowrap;
 }
 
 .constraint-row {
@@ -172,6 +179,8 @@ body {
   gap: 8px;
   height: 8px;
   align-items: center;
+  margin: 0;
+  padding: 0;
 }
 
 .constraint-spacer {
@@ -401,6 +410,10 @@ button:focus {
     gap: 8px;
     align-items: center;
     justify-content: center;
+  }
+
+  .constraint.vertical {
+    width: calc(var(--cell-size) * 0.7);
   }
 }
 
