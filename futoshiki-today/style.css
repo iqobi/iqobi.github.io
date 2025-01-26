@@ -211,12 +211,15 @@ body {
   left: 0;
   right: 0;
   bottom: 0;
-  background-color: rgba(255, 255, 255, 0.8);
-  backdrop-filter: blur(8px);
+  background-color: rgba(255, 255, 255, 0.95); /* Increased opacity */
+  /* Remove backdrop-filter as it can cause issues on iOS */
   display: flex;
   justify-content: center;
   align-items: center;
   z-index: 100;
+  /* Add iOS-specific properties */
+  -webkit-transform: translateZ(0);
+  transform: translateZ(0);
 }
 
 .reveal-button {
@@ -229,6 +232,10 @@ body {
   font-weight: bold;
   cursor: pointer;
   box-shadow: 0 4px 8px rgba(255, 102, 102, 0.3);
+  /* Add tap highlight color override for iOS */
+  -webkit-tap-highlight-color: transparent;
+  /* Add touch action manipulation for better touch handling */
+  touch-action: manipulation;
 }
 
 /* Modal styling */
