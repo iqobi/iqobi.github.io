@@ -266,13 +266,22 @@ function handleNumberClick(event) {
   const {row, col} = selectedCell;
   const value = button.classList.contains('erase') ? null : parseInt(button.dataset.number);
   
-  // Record move
+  if (!isRevealed) {
+    isRevealed = true;
+    startTimer();
+  }
+  
+  // Record move with proper emoji based on the action
   if (value === null) {
-    moves.push('🔙');
+    if (currentGrid[row][col] !== null) {
+      moves.push('🔙'); // Cleared a number
+    }
+  } else if (currentGrid[row][col] !== null) {
+    moves.push('🔄'); // Changed a number
   } else if (value === puzzle.solution_grid[row][col]) {
-    moves.push('✅');
+    moves.push('✅'); // Correct number
   } else {
-    moves.push('❌');
+    moves.push('❌'); // Incorrect number
   }
   
   // Update cell
@@ -280,10 +289,8 @@ function handleNumberClick(event) {
   const cell = document.querySelector(`.cell[data-row="${row}"][data-col="${col}"]`);
   cell.textContent = value || '';
   
-  // Save state
+  // Save state and check solution
   saveGameState();
-  
-  // Check if puzzle is complete
   checkSolution();
 }
 
@@ -381,9 +388,9 @@ function generateShareText() {
     }
   }
 
-  const movesText = finalMoves.every(move => move === "✅") ? 
-    "❇️ PERFECT!" : 
-    finalMoves.join("");
+  // Check if all moves were correct for perfect solve
+  const isPerfect = !moves.includes("❌");
+  const movesText = isPerfect ? "❇️ PERFECT!" : finalMoves.join("");
 
   const today = new Date();
   const dateString = today.toLocaleDateString();
@@ -561,14 +568,16 @@ async function loadSelectedDate() {
   }
 }
 
-// Add new function to reset the puzzle
+// Update resetPuzzle function to track clearing the puzzle
 function resetPuzzle() {
+  // Add move for clearing the entire puzzle
+  moves.push('✴️');
+  
   // Reset the grid to initial state
   currentGrid = puzzle.initial_grid.map(row => [...row]);
   isCompleted = false;
   selectedCell = null;
   elapsedTime = 0;
-  moves = [];
   
   // Reset UI
   setupUI();
