@@ -80,8 +80,8 @@
             </svg>
           </div>
           <div class="rule-text">
-            <h3>Complete the Puzzle</h3>
-            <p>The puzzle is solved when all cells are filled correctly and all inequalities are satisfied.</p>
+            <h3>Share Your Progress</h3>
+            <p>✅ Correct number<br>❌ Incorrect number<br>🔄 Changed a number<br>🔙 Cleared a number<br>✴️ Cleared puzzle<br>❇️ Perfect solve!</p>
           </div>
         </div>
       </div>
@@ -92,9 +92,13 @@
   <!-- Share sheet (for mobile) -->
   <div class="modal hidden" id="share-modal">
     <div class="modal-content">
-      <div class="share-text" id="share-text"></div>
-      <button id="copy-share-btn" class="close-button">Copy</button>
-      <button id="close-share-btn" class="secondary-button">Close</button>
+      <div class="share-text" id="share-text">
+        <!-- Will be populated by JavaScript with the formatted share text -->
+      </div>
+      <div class="share-buttons">
+        <button id="copy-share-btn" class="close-button">Copy</button>
+        <button id="close-share-btn" class="secondary-button">Close</button>
+      </div>
     </div>
   </div>
 

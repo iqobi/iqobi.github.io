@@ -22,17 +22,14 @@ let konamiIndex = 0;
 const COMPLETED_PUZZLES_KEY = 'futoshikiCompletedPuzzles';
 
 // Game state
-let gameState = {
-  grid: [],
-  initialGrid: [],
-  solutionGrid: [],
-  constraints: {},
-  selectedCell: null,
-  startTime: null,
-  isComplete: false,
-  moves: [],
-  puzzleId: null
-};
+let puzzle = null;
+let currentGrid = null;
+let selectedCell = null;
+let isRevealed = false;
+let isCompleted = false;
+let elapsedTime = 0;
+let moves = [];
+let timer = null;
 
 // Initialize the game
 async function init() {
@@ -40,9 +37,14 @@ async function init() {
     // Try to restore saved state
     const savedState = loadGameState();
     if (savedState) {
-      gameState = savedState;
+      puzzle = savedState.puzzle;
+      currentGrid = savedState.grid;
+      isCompleted = savedState.isCompleted;
+      elapsedTime = savedState.elapsedTime;
+      moves = savedState.moves;
+      isRevealed = savedState.isRevealed;
       setupUI();
-      if (!gameState.isComplete) {
+      if (!isCompleted) {
         startTimer();
       }
       return;
@@ -63,7 +65,8 @@ async function init() {
     }
 
     // Initialize game state
-    gameState = createInitialState(todayPuzzle);
+    puzzle = todayPuzzle;
+    currentGrid = todayPuzzle.initial_grid.map(row => [...row]);
     
     // Set up UI
     setupUI();
@@ -84,24 +87,6 @@ function getTodayPuzzle(puzzles) {
   return puzzles.find(puzzle => puzzle.id === dateString);
 }
 
-// Create initial game state from puzzle data
-function createInitialState(puzzle) {
-  return {
-    grid: puzzle.initial_grid.map(row => [...row]),
-    initialGrid: puzzle.initial_grid.map(row => [...row]),
-    solutionGrid: puzzle.solution_grid.map(row => [...row]),
-    constraints: {
-      horizontal: puzzle.constraints.horizontal.map(row => [...row]),
-      vertical: puzzle.constraints.vertical.map(row => [...row])
-    },
-    selectedCell: null,
-    startTime: new Date(),
-    isComplete: false,
-    moves: [],
-    puzzleId: puzzle.id
-  };
-}
-
 // Set up the UI elements
 function setupUI() {
   createGrid();
@@ -113,7 +98,7 @@ function setupUI() {
   
   // Show/hide reveal overlay
   const revealOverlay = document.getElementById('reveal-overlay');
-  if (gameState.moves.length > 0 || gameState.isComplete) {
+  if (moves.length > 0 || isCompleted) {
     revealOverlay.classList.add('hidden');
   } else {
     revealOverlay.classList.remove('hidden');
@@ -137,10 +122,10 @@ function createGrid() {
       cell.dataset.col = col;
       
       // Add value if exists
-      const value = gameState.grid[row][col];
+      const value = currentGrid[row][col];
       if (value) {
         cell.textContent = value;
-        if (gameState.initialGrid[row][col]) {
+        if (puzzle.initial_grid[row][col]) {
           cell.classList.add('initial');
         }
       }
@@ -149,7 +134,7 @@ function createGrid() {
 
       // Add horizontal constraint if exists
       if (col < GRID_SIZE - 1) {
-        const hConstraint = gameState.constraints.horizontal[row][col];
+        const hConstraint = puzzle.constraints.horizontal[row][col];
         if (hConstraint) {
           const constraintDiv = document.createElement('div');
           constraintDiv.className = 'constraint horizontal';
@@ -174,7 +159,7 @@ function createGrid() {
         // Add vertical constraint or spacer
         const constraintDiv = document.createElement('div');
         constraintDiv.className = 'constraint vertical';
-        const vConstraint = gameState.constraints.vertical[row][col];
+        const vConstraint = puzzle.constraints.vertical[row][col];
         if (vConstraint) {
           constraintDiv.textContent = vConstraint === 'up' ? '∧' : '∨';
         }
@@ -193,9 +178,9 @@ function createGrid() {
   }
 
   // Restore selected cell if exists
-  if (gameState.selectedCell) {
+  if (selectedCell) {
     const cell = document.querySelector(
-      `.cell[data-row="${gameState.selectedCell.row}"][data-col="${gameState.selectedCell.col}"]`
+      `.cell[data-row="${selectedCell.row}"][data-col="${selectedCell.col}"]`
     );
     if (cell) cell.classList.add('selected');
   }
@@ -206,7 +191,7 @@ function setupToolbar() {
   const toolbar = document.getElementById('number-toolbar');
   toolbar.innerHTML = '';
   
-  if (gameState.isComplete) {
+  if (isCompleted) {
     const shareButton = document.createElement('button');
     shareButton.className = 'share-button';
     shareButton.innerHTML = '<svg width="20" height="20" viewBox="0 0 24 24"><path fill="currentColor" d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.05-4.11c.54.5 1.25.81 2.04.81 1.66 0 3-1.34 3-3s-1.34-3-3-3-3 1.34-3 3c0 .24.04.47.09.7L8.04 9.81C7.5 9.31 6.79 9 6 9c-1.66 0-3 1.34-3 3s1.34 3 3 3c.79 0 1.5-.31 2.04-.81l7.12 4.16c-.05.21-.08.43-.08.65 0 1.61 1.31 2.92 2.92 2.92s2.92-1.31 2.92-2.92-1.31-2.92-2.92-2.92z"/></svg>Share with friends';
@@ -267,7 +252,7 @@ function handleCellClick(event) {
   
   // Select new cell
   cell.classList.add('selected');
-  gameState.selectedCell = {
+  selectedCell = {
     row: parseInt(cell.dataset.row),
     col: parseInt(cell.dataset.col)
   };
@@ -276,22 +261,22 @@ function handleCellClick(event) {
 // Handle number click
 function handleNumberClick(event) {
   const button = event.target.closest('button');
-  if (!button || !gameState.selectedCell) return;
+  if (!button || !selectedCell) return;
   
-  const {row, col} = gameState.selectedCell;
+  const {row, col} = selectedCell;
   const value = button.classList.contains('erase') ? null : parseInt(button.dataset.number);
   
   // Record move
   if (value === null) {
-    gameState.moves.push('🔙');
-  } else if (value === gameState.solutionGrid[row][col]) {
-    gameState.moves.push('✅');
+    moves.push('🔙');
+  } else if (value === puzzle.solution_grid[row][col]) {
+    moves.push('✅');
   } else {
-    gameState.moves.push('❌');
+    moves.push('❌');
   }
   
   // Update cell
-  gameState.grid[row][col] = value;
+  currentGrid[row][col] = value;
   const cell = document.querySelector(`.cell[data-row="${row}"][data-col="${col}"]`);
   cell.textContent = value || '';
   
@@ -299,46 +284,45 @@ function handleNumberClick(event) {
   saveGameState();
   
   // Check if puzzle is complete
-  checkCompletion();
+  checkSolution();
 }
 
 // Handle reveal button click
 function handleReveal() {
   document.getElementById('reveal-overlay').classList.add('hidden');
-  if (!gameState.isComplete) {
+  if (!isCompleted) {
     startTimer();
   }
 }
 
 // Check if puzzle is complete
-function checkCompletion() {
-  const isComplete = gameState.grid.every((row, i) => 
-    row.every((cell, j) => cell === gameState.solutionGrid[i][j])
+function checkSolution() {
+  const isGridFull = currentGrid.every(row => row.every(cell => cell !== null));
+  const isSolutionCorrect = currentGrid.every((row, i) => 
+    row.every((cell, j) => cell === puzzle.solution_grid[i][j])
   );
-  
-  if (isComplete && !gameState.isComplete) {
-    gameState.isComplete = true;
-    handleCompletion();
+
+  if (isGridFull && isSolutionCorrect) {
+    isCompleted = true;
+    stopTimer();
+    showCompletionState();
+    saveGameState();
   }
 }
 
 // Timer functionality
-let timerInterval;
-
 function startTimer() {
-  if (!gameState.startTime) {
-    gameState.startTime = new Date();
+  if (!timer) {
+    timer = new Date();
   }
-  timerInterval = setInterval(updateTimer, 1000);
+  const currentTime = new Date();
+  elapsedTime = Math.floor((currentTime - timer) / 1000);
+  document.getElementById('timer-label').textContent = formatTime(elapsedTime);
 }
 
 function stopTimer() {
-  clearInterval(timerInterval);
-}
-
-function updateTimer() {
-  const timeSpent = Math.floor((new Date() - gameState.startTime) / 1000);
-  document.getElementById('timer-label').textContent = formatTime(timeSpent);
+  clearInterval(timer);
+  timer = null;
 }
 
 function formatTime(seconds) {
@@ -349,17 +333,19 @@ function formatTime(seconds) {
 
 // Share functionality
 function showShareModal() {
-  const modal = document.getElementById('share-modal');
-  const shareText = document.getElementById('share-text');
-  shareText.textContent = generateShareText();
-  modal.classList.remove('hidden');
+  const shareText = generateShareText();
+  const shareTextElement = document.getElementById('share-text');
+  shareTextElement.textContent = shareText;
+  
+  const shareModal = document.getElementById('share-modal');
+  shareModal.classList.remove('hidden');
 }
 
 function hideShareModal() {
   document.getElementById('share-modal').classList.add('hidden');
   // Ensure grid shows complete solution
-  if (gameState.isComplete) {
-    gameState.grid = gameState.solutionGrid.map(row => [...row]);
+  if (isCompleted) {
+    currentGrid = puzzle.solution_grid.map(row => [...row]);
     createGrid();
   }
 }
@@ -377,14 +363,32 @@ function copyShareText() {
 }
 
 function generateShareText() {
-  const timeSpent = Math.floor((new Date() - gameState.startTime) / 1000);
-  const date = new Date(parseInt(gameState.puzzleId.slice(0, 4)),
-                       parseInt(gameState.puzzleId.slice(4, 6)) - 1,
-                       parseInt(gameState.puzzleId.slice(6, 8)));
-  
-  return `Futoshiki ${date.toLocaleDateString()}: ${formatTime(timeSpent)}\n` +
-         `${gameState.moves.join('')}\n` +
-         `📲 www.futoshiki.today`;
+  const minutes = Math.floor(elapsedTime / 60);
+  const seconds = elapsedTime % 60;
+  const timeString = minutes > 0 ? 
+    `${minutes}:${seconds.toString().padStart(2, '0')}` : 
+    `${seconds}s`;
+
+  // Create array showing final state of each cell that wasn't given
+  const finalMoves = [];
+  for (let row = 0; row < currentGrid.length; row++) {
+    for (let col = 0; col < currentGrid[row].length; col++) {
+      if (puzzle.initial_grid[row][col] === null) {
+        if (currentGrid[row][col] !== null) {
+          finalMoves.push(currentGrid[row][col] === puzzle.solution_grid[row][col] ? "✅" : "❌");
+        }
+      }
+    }
+  }
+
+  const movesText = finalMoves.every(move => move === "✅") ? 
+    "❇️ PERFECT!" : 
+    finalMoves.join("");
+
+  const today = new Date();
+  const dateString = today.toLocaleDateString();
+
+  return `Futoshiki ${dateString}: ${timeString} in ${moves.length} steps\n${movesText}\n📲 www.futoshiki.today`;
 }
 
 // Rules modal
@@ -398,29 +402,26 @@ function hideRules() {
 
 // Local storage
 function saveGameState() {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(gameState));
+  const gameState = {
+    grid: currentGrid,
+    isCompleted,
+    elapsedTime,
+    moves,
+    isRevealed,
+    date: new Date().toISOString().split('T')[0]
+  };
+  localStorage.setItem('gameState', JSON.stringify(gameState));
 }
 
 function loadGameState() {
-  const saved = localStorage.getItem(STORAGE_KEY);
-  if (!saved) return null;
-  
-  const state = JSON.parse(saved);
-  const today = new Date();
-  const todayString = today.getFullYear() +
-    String(today.getMonth() + 1).padStart(2, '0') +
-    String(today.getDate()).padStart(2, '0');
-  
-  // Only restore if it's today's puzzle
-  if (state.puzzleId === todayString) {
-    state.startTime = new Date(state.startTime);
-    // If puzzle is complete, show solution grid
-    if (state.isComplete) {
-      state.grid = state.solutionGrid.map(row => [...row]);
+  const savedState = localStorage.getItem('gameState');
+  if (savedState) {
+    const state = JSON.parse(savedState);
+    const today = new Date().toISOString().split('T')[0];
+    if (state.date === today) {
+      return state;
     }
-    return state;
   }
-  
   return null;
 }
 
@@ -453,12 +454,12 @@ function hideDevModal() {
 // Add function to save completed puzzle
 function saveCompletedPuzzle() {
   const completedPuzzles = loadCompletedPuzzles();
-  const timeSpent = Math.floor((new Date() - gameState.startTime) / 1000);
+  const timeSpent = Math.floor((new Date() - timer) / 1000);
   
-  completedPuzzles[gameState.puzzleId] = {
+  completedPuzzles[puzzle.id] = {
     date: new Date().toISOString(),
     time: timeSpent,
-    moves: gameState.moves
+    moves: moves
   };
   
   localStorage.setItem(COMPLETED_PUZZLES_KEY, JSON.stringify(completedPuzzles));
@@ -471,14 +472,13 @@ function loadCompletedPuzzles() {
 }
 
 // Update handleCompletion function to save completed puzzle
-function handleCompletion() {
+function showCompletionState() {
   // Stop timer
   stopTimer();
-  clearInterval(timerInterval);
-  timerInterval = null;
+  timer = null;
 
   // Show solution grid
-  gameState.grid = gameState.solutionGrid.map(row => [...row]);
+  currentGrid = puzzle.solution_grid.map(row => [...row]);
   
   // Save completion
   saveCompletedPuzzle();
@@ -511,21 +511,21 @@ async function loadSelectedDate() {
     }
 
     // Initialize new game state
-    gameState = createInitialState(puzzle);
+    currentGrid = puzzle.initial_grid.map(row => [...row]);
     
     // Check if puzzle was already completed
     const completedPuzzles = loadCompletedPuzzles();
     const completion = completedPuzzles[dateString];
     if (completion) {
-      gameState.isComplete = true;
-      gameState.grid = gameState.solutionGrid.map(row => [...row]);
-      gameState.moves = completion.moves;
-      gameState.startTime = new Date(new Date() - completion.time * 1000);
+      isCompleted = true;
+      currentGrid = puzzle.solution_grid.map(row => [...row]);
+      moves = completion.moves;
+      elapsedTime = completion.time;
     }
     
     // Reset UI
     setupUI();
-    if (!gameState.isComplete) {
+    if (!isCompleted) {
       startTimer();
     }
     
@@ -564,11 +564,11 @@ async function loadSelectedDate() {
 // Add new function to reset the puzzle
 function resetPuzzle() {
   // Reset the grid to initial state
-  gameState.grid = gameState.initialGrid.map(row => [...row]);
-  gameState.isComplete = false;
-  gameState.selectedCell = null;
-  gameState.startTime = new Date();
-  gameState.moves = [];
+  currentGrid = puzzle.initial_grid.map(row => [...row]);
+  isCompleted = false;
+  selectedCell = null;
+  elapsedTime = 0;
+  moves = [];
   
   // Reset UI
   setupUI();
