@@ -31,6 +31,16 @@ let elapsedTime = 0;
 let moves = [];
 let timer = null;
 
+// Update the move recording constants
+const MOVE_TYPES = {
+  CORRECT: '✅',
+  INCORRECT: '❌',
+  CHANGE: '🔄',
+  CLEAR: '🔙',
+  RESET: '✴️',
+  PERFECT: '✨'
+};
+
 // Initialize the game
 async function init() {
   try {
@@ -274,14 +284,14 @@ function handleNumberClick(event) {
   // Record move with proper emoji based on the action
   if (value === null) {
     if (currentGrid[row][col] !== null) {
-      moves.push('🔙'); // Cleared a number
+      moves.push(MOVE_TYPES.CLEAR);
     }
   } else if (currentGrid[row][col] !== null) {
-    moves.push('🔄'); // Changed a number
+    moves.push(MOVE_TYPES.CHANGE);
   } else if (value === puzzle.solution_grid[row][col]) {
-    moves.push('✅'); // Correct number
+    moves.push(MOVE_TYPES.CORRECT);
   } else {
-    moves.push('❌'); // Incorrect number
+    moves.push(MOVE_TYPES.INCORRECT);
   }
   
   // Update cell
@@ -312,6 +322,12 @@ function checkSolution() {
   if (isGridFull && isSolutionCorrect) {
     isCompleted = true;
     stopTimer();
+    
+    // Add perfect solve emoji if no incorrect moves
+    if (!moves.includes(MOVE_TYPES.INCORRECT)) {
+      moves.push(MOVE_TYPES.PERFECT);
+    }
+    
     showCompletionState();
     saveGameState();
   }
@@ -320,16 +336,18 @@ function checkSolution() {
 // Timer functionality
 function startTimer() {
   if (!timer) {
-    timer = new Date();
+    timer = setInterval(() => {
+      elapsedTime++;
+      document.getElementById('timer-label').textContent = formatTime(elapsedTime);
+    }, 1000);
   }
-  const currentTime = new Date();
-  elapsedTime = Math.floor((currentTime - timer) / 1000);
-  document.getElementById('timer-label').textContent = formatTime(elapsedTime);
 }
 
 function stopTimer() {
-  clearInterval(timer);
-  timer = null;
+  if (timer) {
+    clearInterval(timer);
+    timer = null;
+  }
 }
 
 function formatTime(seconds) {
@@ -382,20 +400,21 @@ function generateShareText() {
     for (let col = 0; col < currentGrid[row].length; col++) {
       if (puzzle.initial_grid[row][col] === null) {
         if (currentGrid[row][col] !== null) {
-          finalMoves.push(currentGrid[row][col] === puzzle.solution_grid[row][col] ? "✅" : "❌");
+          finalMoves.push(currentGrid[row][col] === puzzle.solution_grid[row][col] ? 
+            MOVE_TYPES.CORRECT : MOVE_TYPES.INCORRECT);
         }
       }
     }
   }
 
   // Check if all moves were correct for perfect solve
-  const isPerfect = !moves.includes("❌");
-  const movesText = isPerfect ? "❇️ PERFECT!" : finalMoves.join("");
+  const isPerfect = !moves.includes(MOVE_TYPES.INCORRECT);
+  const movesText = isPerfect ? `${MOVE_TYPES.PERFECT} PERFECT!` : finalMoves.join("");
 
   const today = new Date();
   const dateString = today.toLocaleDateString();
 
-  return `Futoshiki ${dateString}: ${timeString} in ${moves.length} steps\n${movesText}\n📲 www.futoshiki.today`;
+  return `Futoshiki ${dateString}: ${timeString} in ${moves.length} steps\n${movesText}\n📱 https://futoshiki.today`;
 }
 
 // Rules modal
@@ -410,6 +429,7 @@ function hideRules() {
 // Local storage
 function saveGameState() {
   const gameState = {
+    puzzle: puzzle,
     grid: currentGrid,
     isCompleted,
     elapsedTime,
@@ -417,11 +437,11 @@ function saveGameState() {
     isRevealed,
     date: new Date().toISOString().split('T')[0]
   };
-  localStorage.setItem('gameState', JSON.stringify(gameState));
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(gameState));
 }
 
 function loadGameState() {
-  const savedState = localStorage.getItem('gameState');
+  const savedState = localStorage.getItem(STORAGE_KEY);
   if (savedState) {
     const state = JSON.parse(savedState);
     const today = new Date().toISOString().split('T')[0];
@@ -568,10 +588,10 @@ async function loadSelectedDate() {
   }
 }
 
-// Update resetPuzzle function to track clearing the puzzle
+// Update resetPuzzle function to use consistent emoji
 function resetPuzzle() {
   // Add move for clearing the entire puzzle
-  moves.push('✴️');
+  moves.push(MOVE_TYPES.RESET);
   
   // Reset the grid to initial state
   currentGrid = puzzle.initial_grid.map(row => [...row]);
