@@ -53,8 +53,15 @@ async function init() {
       elapsedTime = savedState.elapsedTime;
       moves = savedState.moves;
       isRevealed = savedState.isRevealed;
+      selectedCell = savedState.selectedCell;
+
       setupUI();
-      if (!isCompleted) {
+
+      // Update timer display immediately
+      document.getElementById('timer-label').textContent = formatTime(elapsedTime);
+
+      // Only start timer if puzzle isn't completed
+      if (!isCompleted && isRevealed) {
         startTimer();
       }
       return;
@@ -66,7 +73,7 @@ async function init() {
       throw new Error('Failed to fetch puzzles');
     }
     const puzzles = await response.json();
-    
+
     // Get today's puzzle
     const todayPuzzle = getTodayPuzzle(puzzles);
     if (!todayPuzzle) {
@@ -77,10 +84,10 @@ async function init() {
     // Initialize game state
     puzzle = todayPuzzle;
     currentGrid = todayPuzzle.initial_grid.map(row => [...row]);
-    
+
     // Set up UI
     setupUI();
-    
+
   } catch (error) {
     console.error('Failed to initialize puzzle:', error);
     document.getElementById('title-today').textContent = 'Failed to load puzzle';
@@ -93,7 +100,7 @@ function getTodayPuzzle(puzzles) {
   const dateString = today.getFullYear() +
     String(today.getMonth() + 1).padStart(2, '0') +
     String(today.getDate()).padStart(2, '0');
-    
+
   return puzzles.find(puzzle => puzzle.id === dateString);
 }
 
@@ -102,10 +109,10 @@ function setupUI() {
   createGrid();
   setupToolbar();
   setupEventListeners();
-  
+
   // Update title
   document.getElementById('title-today').textContent = 'Today';
-  
+
   // Show/hide reveal overlay
   const revealOverlay = document.getElementById('reveal-overlay');
   if (moves.length > 0 || isCompleted) {
@@ -130,7 +137,7 @@ function createGrid() {
       cell.className = 'cell';
       cell.dataset.row = row;
       cell.dataset.col = col;
-      
+
       // Add value if exists
       const value = currentGrid[row][col];
       if (value) {
@@ -139,7 +146,7 @@ function createGrid() {
           cell.classList.add('initial');
         }
       }
-      
+
       gridRow.appendChild(cell);
 
       // Add horizontal constraint if exists
@@ -157,14 +164,14 @@ function createGrid() {
         }
       }
     }
-    
+
     container.appendChild(gridRow);
 
     // Add vertical constraints row if not last row
     if (row < GRID_SIZE - 1) {
       const constraintRow = document.createElement('div');
       constraintRow.className = 'constraint-row';
-      
+
       for (let col = 0; col < GRID_SIZE; col++) {
         // Add vertical constraint or spacer
         const constraintDiv = document.createElement('div');
@@ -174,7 +181,7 @@ function createGrid() {
           constraintDiv.textContent = vConstraint === 'up' ? '∧' : '∨';
         }
         constraintRow.appendChild(constraintDiv);
-        
+
         // Add horizontal spacer between vertical constraints
         if (col < GRID_SIZE - 1) {
           const spacer = document.createElement('div');
@@ -182,7 +189,7 @@ function createGrid() {
           constraintRow.appendChild(spacer);
         }
       }
-      
+
       container.appendChild(constraintRow);
     }
   }
@@ -200,7 +207,7 @@ function createGrid() {
 function setupToolbar() {
   const toolbar = document.getElementById('number-toolbar');
   toolbar.innerHTML = '';
-  
+
   if (isCompleted) {
     const shareButton = document.createElement('button');
     shareButton.className = 'share-button';
@@ -216,7 +223,7 @@ function setupToolbar() {
       button.dataset.number = i;
       toolbar.appendChild(button);
     }
-    
+
     // Add erase button
     const eraseButton = document.createElement('button');
     eraseButton.innerHTML = '&times;';
@@ -234,10 +241,10 @@ function setupEventListeners() {
   document.getElementById('reveal-btn').addEventListener('click', handleReveal);
   document.getElementById('copy-share-btn')?.addEventListener('click', copyShareText);
   document.getElementById('close-share-btn')?.addEventListener('click', hideShareModal);
-  
+
   // Add Konami code listener
   document.addEventListener('keydown', handleKonamiCode);
-  
+
   // Dev modal listeners
   document.getElementById('close-dev-modal-btn').addEventListener('click', hideDevModal);
   document.getElementById('load-date-btn').addEventListener('click', loadSelectedDate);
@@ -245,7 +252,7 @@ function setupEventListeners() {
     resetPuzzle();
     hideDevModal();
   });
-  
+
   // Set max date to today
   const dateInput = document.getElementById('puzzle-date');
   const today = new Date();
@@ -256,50 +263,55 @@ function setupEventListeners() {
 function handleCellClick(event) {
   const cell = event.target.closest('.cell');
   if (!cell || cell.classList.contains('initial')) return;
-  
+
   // Remove previous selection
   document.querySelector('.cell.selected')?.classList.remove('selected');
-  
+
   // Select new cell
   cell.classList.add('selected');
   selectedCell = {
     row: parseInt(cell.dataset.row),
     col: parseInt(cell.dataset.col)
   };
+
+  // Save state after updating selectedCell
+  saveGameState();
 }
 
 // Handle number click
 function handleNumberClick(event) {
   const button = event.target.closest('button');
   if (!button || !selectedCell) return;
-  
-  const {row, col} = selectedCell;
+
+  const { row, col } = selectedCell;
   const value = button.classList.contains('erase') ? null : parseInt(button.dataset.number);
-  
+
   if (!isRevealed) {
     isRevealed = true;
+    document.getElementById('reveal-overlay').classList.add('hidden');
     startTimer();
   }
-  
-  // Record move with proper emoji based on the action
+
+  // Record move based on the action type
   if (value === null) {
+    // Clear action
     if (currentGrid[row][col] !== null) {
       moves.push(MOVE_TYPES.CLEAR);
     }
   } else if (currentGrid[row][col] !== null) {
+    // Change existing number
     moves.push(MOVE_TYPES.CHANGE);
-  } else if (value === puzzle.solution_grid[row][col]) {
-    moves.push(MOVE_TYPES.CORRECT);
   } else {
-    moves.push(MOVE_TYPES.INCORRECT);
+    // New number placement
+    moves.push(value === puzzle.solution_grid[row][col] ?
+      MOVE_TYPES.CORRECT : MOVE_TYPES.INCORRECT);
   }
-  
+
   // Update cell
   currentGrid[row][col] = value;
   const cell = document.querySelector(`.cell[data-row="${row}"][data-col="${col}"]`);
   cell.textContent = value || '';
-  
-  // Save state and check solution
+
   saveGameState();
   checkSolution();
 }
@@ -315,19 +327,19 @@ function handleReveal() {
 // Check if puzzle is complete
 function checkSolution() {
   const isGridFull = currentGrid.every(row => row.every(cell => cell !== null));
-  const isSolutionCorrect = currentGrid.every((row, i) => 
+  const isSolutionCorrect = currentGrid.every((row, i) =>
     row.every((cell, j) => cell === puzzle.solution_grid[i][j])
   );
 
   if (isGridFull && isSolutionCorrect) {
     isCompleted = true;
     stopTimer();
-    
+
     // Add perfect solve emoji if no incorrect moves
     if (!moves.includes(MOVE_TYPES.INCORRECT)) {
       moves.push(MOVE_TYPES.PERFECT);
     }
-    
+
     showCompletionState();
     saveGameState();
   }
@@ -361,7 +373,7 @@ function showShareModal() {
   const shareText = generateShareText();
   const shareTextElement = document.getElementById('share-text');
   shareTextElement.textContent = shareText;
-  
+
   const shareModal = document.getElementById('share-modal');
   shareModal.classList.remove('hidden');
 }
@@ -388,33 +400,30 @@ function copyShareText() {
 }
 
 function generateShareText() {
+  // Format time according to documentation rules
   const minutes = Math.floor(elapsedTime / 60);
   const seconds = elapsedTime % 60;
-  const timeString = minutes > 0 ? 
-    `${minutes}:${seconds.toString().padStart(2, '0')}` : 
+  const timeString = minutes > 0 ?
+    `${minutes}:${seconds.toString().padStart(2, '0')}` :
     `${seconds}s`;
 
-  // Create array showing final state of each cell that wasn't given
-  const finalMoves = [];
-  for (let row = 0; row < currentGrid.length; row++) {
-    for (let col = 0; col < currentGrid[row].length; col++) {
-      if (puzzle.initial_grid[row][col] === null) {
-        if (currentGrid[row][col] !== null) {
-          finalMoves.push(currentGrid[row][col] === puzzle.solution_grid[row][col] ? 
-            MOVE_TYPES.CORRECT : MOVE_TYPES.INCORRECT);
-        }
-      }
-    }
-  }
-
-  // Check if all moves were correct for perfect solve
-  const isPerfect = !moves.includes(MOVE_TYPES.INCORRECT);
-  const movesText = isPerfect ? `${MOVE_TYPES.PERFECT} PERFECT!` : finalMoves.join("");
-
+  // Format date
   const today = new Date();
   const dateString = today.toLocaleDateString();
 
-  return `Futoshiki ${dateString}: ${timeString} in ${moves.length} steps\n${movesText}\n📱 https://futoshiki.today`;
+  // Format moves sequence
+  let movesText;
+  if (moves.every(move => move === MOVE_TYPES.CORRECT)) {
+    // Perfect solve case - replace last checkmark with sparkle
+    const perfectMoves = [...moves];
+    perfectMoves[perfectMoves.length - 1] = MOVE_TYPES.PERFECT;
+    movesText = perfectMoves.join('');
+  } else {
+    movesText = moves.join('');
+  }
+
+  // Return formatted share text
+  return `Futoshiki ${dateString}: ${timeString} in ${moves.length} steps\n${movesText}\n📲 www.futoshiki.today`;
 }
 
 // Rules modal
@@ -435,6 +444,7 @@ function saveGameState() {
     elapsedTime,
     moves,
     isRevealed,
+    selectedCell,
     date: new Date().toISOString().split('T')[0]
   };
   localStorage.setItem(STORAGE_KEY, JSON.stringify(gameState));
@@ -445,8 +455,13 @@ function loadGameState() {
   if (savedState) {
     const state = JSON.parse(savedState);
     const today = new Date().toISOString().split('T')[0];
+
+    // Only return saved state if it's from today
     if (state.date === today) {
       return state;
+    } else {
+      // Clear storage if it's a new day
+      localStorage.removeItem(STORAGE_KEY);
     }
   }
   return null;
@@ -456,7 +471,7 @@ function loadGameState() {
 function handleKonamiCode(event) {
   if (event.key.toLowerCase() === KONAMI_CODE[konamiIndex].toLowerCase()) {
     konamiIndex++;
-    
+
     if (konamiIndex === KONAMI_CODE.length) {
       showDevModal();
       konamiIndex = 0;
@@ -482,13 +497,13 @@ function hideDevModal() {
 function saveCompletedPuzzle() {
   const completedPuzzles = loadCompletedPuzzles();
   const timeSpent = Math.floor((new Date() - timer) / 1000);
-  
+
   completedPuzzles[puzzle.id] = {
     date: new Date().toISOString(),
     time: timeSpent,
     moves: moves
   };
-  
+
   localStorage.setItem(COMPLETED_PUZZLES_KEY, JSON.stringify(completedPuzzles));
 }
 
@@ -500,20 +515,20 @@ function loadCompletedPuzzles() {
 
 // Update handleCompletion function to save completed puzzle
 function showCompletionState() {
-  // Stop timer
   stopTimer();
   timer = null;
 
-  // Show solution grid
+  // Check for perfect solve
+  if (moves.every(move => move === MOVE_TYPES.CORRECT)) {
+    // Replace last move with perfect indicator
+    moves[moves.length - 1] = MOVE_TYPES.PERFECT;
+  }
+
   currentGrid = puzzle.solution_grid.map(row => [...row]);
-  
-  // Save completion
-  saveCompletedPuzzle();
-  
-  // Update the display
   createGrid();
-  setupToolbar(); // Switch to share button
+  setupToolbar();
   saveGameState();
+  saveCompletedPuzzle();
 }
 
 // Update loadSelectedDate function to check if puzzle was already completed
@@ -529,7 +544,7 @@ async function loadSelectedDate() {
     const response = await fetch(PUZZLE_URL);
     if (!response.ok) throw new Error('Failed to fetch puzzles');
     const puzzles = await response.json();
-    
+
     // Find selected puzzle
     const puzzle = puzzles.find(p => p.id === dateString);
     if (!puzzle) {
@@ -539,7 +554,7 @@ async function loadSelectedDate() {
 
     // Initialize new game state
     currentGrid = puzzle.initial_grid.map(row => [...row]);
-    
+
     // Check if puzzle was already completed
     const completedPuzzles = loadCompletedPuzzles();
     const completion = completedPuzzles[dateString];
@@ -549,19 +564,19 @@ async function loadSelectedDate() {
       moves = completion.moves;
       elapsedTime = completion.time;
     }
-    
+
     // Reset UI
     setupUI();
     if (!isCompleted) {
       startTimer();
     }
-    
+
     // Save state
     saveGameState();
-    
+
     // Hide modal
     hideDevModal();
-    
+
     // Show confirmation
     const message = document.createElement('div');
     message.textContent = `📅 Loaded puzzle for ${selectedDate.toLocaleDateString()}`;
@@ -578,40 +593,32 @@ async function loadSelectedDate() {
       animation: fadeOut 1s ease-in-out forwards;
       z-index: 1000;
     `;
-    
+
     document.body.appendChild(message);
     setTimeout(() => message.remove(), 1000);
-    
+
   } catch (error) {
     console.error('Failed to load puzzle:', error);
     alert('Failed to load puzzle for selected date');
   }
 }
 
-// Update resetPuzzle function to use consistent emoji
+// Update resetPuzzle function to use new reset emoji
 function resetPuzzle() {
-  // Add move for clearing the entire puzzle
   moves.push(MOVE_TYPES.RESET);
-  
-  // Reset the grid to initial state
   currentGrid = puzzle.initial_grid.map(row => [...row]);
   isCompleted = false;
   selectedCell = null;
   elapsedTime = 0;
-  
-  // Reset UI
+
   setupUI();
-  
-  // Start timer
   stopTimer();
   startTimer();
-  
-  // Save the reset state
   saveGameState();
-  
-  // Show a brief message
+
+  // Show reset confirmation message
   const message = document.createElement('div');
-  message.textContent = '🔄 Puzzle Reset!';
+  message.textContent = `${MOVE_TYPES.RESET} Puzzle Reset!`;
   message.style.cssText = `
     position: fixed;
     top: 50%;
@@ -625,7 +632,7 @@ function resetPuzzle() {
     animation: fadeOut 1s ease-in-out forwards;
     z-index: 1000;
   `;
-  
+
   document.body.appendChild(message);
   setTimeout(() => message.remove(), 1000);
 }
