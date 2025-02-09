@@ -80,5 +80,23 @@ body {
 }
 
 body.privacy {
-  flex-direction: column;}
+  flex-direction: column;
+}
+
+body.privacy p {
+  font-size: calc(var(--unit) * 0.5);
+  font-weight: normal;
+  margin-bottom: calc(var(--unit) * 0.5);
+}
+
+body.privacy h2 {
+  margin-top: calc(var(--unit) * 0.75);
+  color: #333;
+}
+
+body.privacy h3 {
+  font-size: calc(var(--unit) * 0.4);
+  color: #666;
+  margin-top: calc(var(--unit) * 0.75);
+}
 
